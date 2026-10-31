@@ -1,0 +1,134 @@
+/* Pro Private - pin.css */
+
+.pin-theme {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: 8px;
+  z-index: 50;
+}
+
+.pin-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.pin-logo svg {
+  width: 36px;
+  height: 36px;
+}
+
+.pin-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.pin-sub {
+  margin-top: 6px;
+  min-height: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ---------- Nukta za PIN ---------- */
+.pin-dots {
+  display: flex;
+  gap: 14px;
+  margin: 28px 0 8px;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.pin-dot.filled {
+  background: var(--text);
+  border-color: var(--text);
+  transform: scale(1.1);
+}
+
+.pin-dots.error .pin-dot {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.pin-dots.shake {
+  animation: pin-shake 0.4s ease;
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-8px); }
+  80%      { transform: translateX(8px); }
+}
+
+/* ---------- Ujumbe ---------- */
+.pin-msg {
+  min-height: 22px;
+  max-width: 300px;
+  font-size: 14px;
+  color: var(--danger);
+}
+
+.pin-msg.info {
+  color: var(--text-muted);
+}
+
+/* ---------- Keypad ---------- */
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 20px;
+}
+
+.pin-key {
+  height: 68px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 26px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.1s ease, color 0.1s ease;
+}
+
+.pin-key:active {
+  transform: scale(0.94);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.pin-key.ghost {
+  border: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.pin-pad.disabled .pin-key {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Simu ndogo zenye urefu mfupi */
+@media (max-height: 680px) {
+  .pin-logo { display: none; }
+  .pin-key { height: 58px; font-size: 24px; }
+  .pin-dots { margin-top: 20px; }
+}

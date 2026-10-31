@@ -1,0 +1,16 @@
+/* Pro Private - Theme NYEUPE */
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-elevated: #f7f7f7;
+  --card: #f2f2f2;
+  --card-hover: #e8e8e8;
+  --border: #dcdcdc;
+  --text: #0a0a0a;
+  --text-muted: #6b6b6b;
+  --accent: #0a0a0a;
+  --accent-text: #ffffff;
+  --danger: #d93025;
+  --overlay: rgba(255, 255, 255, 0.85);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  color-scheme: light;
+}

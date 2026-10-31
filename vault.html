@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="sw" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Pro Private</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/theme-dark.css">
+  <link rel="stylesheet" href="css/theme-light.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/vault.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">Pro Private</h1>
+    <div class="header-actions">
+      <button class="icon-btn" data-theme-toggle aria-label="Badili theme">☀️</button>
+      <button class="icon-btn" id="lockBtn" aria-label="Funga app">🔒</button>
+    </div>
+  </header>
+
+  <!-- Upau wa kuchagua (unaonekana ukibonyeza kwa muda mrefu) -->
+  <div class="select-bar hidden" id="selectBar">
+    <button class="icon-btn" id="selCancel" aria-label="Ghairi">✕</button>
+    <span id="selCount">0 zimechaguliwa</span>
+    <button class="icon-btn" id="selDelete" aria-label="Futa">🗑️</button>
+  </div>
+
+  <main class="app-main">
+    <div class="section-head">
+      <h2 id="sectionTitle">Picha</h2>
+      <span class="muted" id="sectionCount"></span>
+    </div>
+    <section id="content"></section>
+  </main>
+
+  <button class="fab" id="addBtn" aria-label="Ongeza faili">+</button>
+
+  <nav class="bottom-nav">
+    <button data-tab="photo" class="active"><span class="nav-icon">🖼️</span>Picha</button>
+    <button data-tab="video"><span class="nav-icon">🎬</span>Video</button>
+    <button data-tab="audio"><span class="nav-icon">🎵</span>Muziki</button>
+    <a href="settings.html"><span class="nav-icon">⚙️</span>Settings</a>
+  </nav>
+
+  <input type="file" id="fileInput" multiple hidden>
+
+  <div class="progress-overlay hidden" id="progress">
+    <div class="progress-card">
+      <div class="spinner"></div>
+      <p id="progressText">Inaficha...</p>
+      <p class="muted" id="progressName"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/crypto.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/vault.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

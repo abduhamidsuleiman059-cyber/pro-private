@@ -1,0 +1,17 @@
+/* Pro Private - Theme NYEUSI */
+:root,
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --bg-elevated: #121212;
+  --card: #161616;
+  --card-hover: #1e1e1e;
+  --border: #2a2a2a;
+  --text: #ffffff;
+  --text-muted: #9a9a9a;
+  --accent: #ffffff;
+  --accent-text: #0a0a0a;
+  --danger: #ff5a5a;
+  --overlay: rgba(0, 0, 0, 0.75);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}

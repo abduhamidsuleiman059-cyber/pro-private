@@ -1,0 +1,123 @@
+/* Pro Private - viewer.css (nyeusi kila wakati ili picha zionekane vizuri) */
+
+.viewer-page {
+  max-width: none;
+  margin: 0;
+  border: none;
+  background: #000;
+  color: #fff;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.viewer-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: calc(env(safe-area-inset-top) + 6px) 8px 18px;
+  background: linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0));
+}
+
+.viewer-top .icon-btn {
+  color: #fff;
+}
+
+.viewer-title {
+  flex: 1;
+  min-width: 0;
+  padding-left: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewer-count {
+  padding: 0 6px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.stage.is-video {
+  touch-action: auto;
+}
+
+.stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.stage video {
+  width: 100%;
+  max-height: 100%;
+  background: #000;
+}
+
+.stage .loading {
+  color: #bbb;
+  font-size: 14px;
+}
+
+.nav-arrow {
+  position: fixed;
+  top: 50%;
+  z-index: 15;
+  width: 42px;
+  height: 64px;
+  margin-top: -32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.nav-arrow.left  { left: 0;  border-radius: 0 14px 14px 0; }
+.nav-arrow.right { right: 0; border-radius: 14px 0 0 14px; }
+
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(32px + env(safe-area-inset-bottom));
+  z-index: 90;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}

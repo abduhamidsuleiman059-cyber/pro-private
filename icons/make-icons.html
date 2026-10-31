@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tengeneza Icons</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; padding: 24px; }
+    .row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+    .box { background: #1c1c1c; padding: 16px; border-radius: 14px; }
+    canvas { width: 160px; height: 160px; border-radius: 20px; display: block; margin: 0 auto 12px; }
+    a { display: inline-block; padding: 12px 18px; background: #fff; color: #000; border-radius: 10px; text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Icons za Pro Private</h2>
+  <p>Bonyeza kila kitufe, hifadhi faili ndani ya folder la <b>icons</b>.</p>
+  <div class="row">
+    <div class="box"><canvas id="p192"></canvas><a id="d192" download="icon-192.png">Pakua icon-192.png</a></div>
+    <div class="box"><canvas id="p512"></canvas><a id="d512" download="icon-512.png">Pakua icon-512.png</a></div>
+  </div>
+
+  <script>
+    function draw(size) {
+      var c = document.createElement('canvas');
+      c.width = c.height = size;
+      var x = c.getContext('2d');
+      var s = size;
+
+      x.fillStyle = '#0a0a0a';
+      x.fillRect(0, 0, s, s);
+
+      var bw = s * 0.42, bh = s * 0.32, bx = (s - bw) / 2, by = s * 0.46, r = s * 0.05;
+
+      // mwili wa kufuli
+      x.fillStyle = '#ffffff';
+      x.beginPath();
+      x.moveTo(bx + r, by);
+      x.arcTo(bx + bw, by, bx + bw, by + bh, r);
+      x.arcTo(bx + bw, by + bh, bx, by + bh, r);
+      x.arcTo(bx, by + bh, bx, by, r);
+      x.arcTo(bx, by, bx + bw, by, r);
+      x.closePath();
+      x.fill();
+
+      // kitanzi
+      x.strokeStyle = '#ffffff';
+      x.lineWidth = s * 0.06;
+      x.lineCap = 'butt';
+      x.beginPath();
+      x.moveTo(s * 0.37, by + 2);
+      x.lineTo(s * 0.37, s * 0.42);
+      x.arc(s / 2, s * 0.42, s * 0.13, Math.PI, 0, false);
+      x.lineTo(s * 0.63, by + 2);
+      x.stroke();
+
+      // tundu la ufunguo
+      var kr = s * 0.035, cx = s / 2, cy = by + bh * 0.42;
+      x.fillStyle = '#0a0a0a';
+      x.beginPath();
+      x.arc(cx, cy, kr, 0, Math.PI * 2);
+      x.fill();
+      x.fillRect(cx - kr * 0.45, cy, kr * 0.9, bh * 0.32);
+
+      return c;
+    }
+
+    function setup(size, canvasId, linkId) {
+      var big = draw(size);
+      var prev = document.getElementById(canvasId);
+      prev.width = prev.height = size;
+      prev.getContext('2d').drawImage(big, 0, 0);
+      big.toBlob(function (blob) {
+        document.getElementById(linkId).href = URL.createObjectURL(blob);
+      }, 'image/png');
+    }
+
+    setup(192, 'p192', 'd192');
+    setup(512, 'p512', 'd512');
+  </script>
+</body>
+</html>

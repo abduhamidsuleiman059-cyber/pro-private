@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="sw" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Pro Private</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/theme-dark.css">
+  <link rel="stylesheet" href="css/theme-light.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/viewer.css">
+  <script src="js/theme.js"></script>
+</head>
+<body class="viewer-page">
+
+  <div class="viewer-top">
+    <button class="icon-btn" id="backBtn" aria-label="Rudi">←</button>
+    <div class="viewer-title" id="viewTitle"></div>
+    <span class="viewer-count" id="viewCount"></span>
+    <button class="icon-btn" id="saveBtn" aria-label="Rudisha kwenye simu">⬇️</button>
+    <button class="icon-btn" id="delBtn" aria-label="Futa">🗑️</button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <button class="nav-arrow left hidden" id="prevBtn" aria-label="Iliyotangulia">‹</button>
+  <button class="nav-arrow right hidden" id="nextBtn" aria-label="Inayofuata">›</button>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/crypto.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/media.js"></script>
+  <script src="js/viewer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="sw" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Pro Private</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/theme-dark.css">
+  <link rel="stylesheet" href="css/theme-light.css">
+  <link rel="stylesheet" href="css/base.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+
+  <main class="screen-center">
+    <div class="splash-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="9" rx="2.5"></rect>
+        <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+        <circle cx="12" cy="15.5" r="1"></circle>
+      </svg>
+    </div>
+    <h1 class="app-title">Pro Private</h1>
+    <p class="muted mt-8">Inafungua...</p>
+    <a class="muted mt-24" href="pin.html">Haifunguki? Bonyeza hapa</a>
+  </main>
+
+  <style>
+    .splash-logo {
+      width: 84px;
+      height: 84px;
+      margin-bottom: 18px;
+      border-radius: 26px;
+      background: var(--accent);
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: splash-pop 0.5s ease both;
+    }
+    .splash-logo svg { width: 42px; height: 42px; }
+    @keyframes splash-pop {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+
+  <script src="js/crypto.js"></script>
+  <script>
+    /* Mwelekeo: ana session -> vault, hana -> pin */
+    (function () {
+      function go(u) { setTimeout(function () { location.replace(u); }, 450); }
+      if (!window.crypto || !window.crypto.subtle) { go('pin.html'); return; }
+      PPCrypto.getSessionKey().then(
+        function (k) { go(k ? 'vault.html' : 'pin.html'); },
+        function () { go('pin.html'); }
+      );
+    })();
+  </script>
+  <script src="js/app.js"></script>
+</body>
+</html>
