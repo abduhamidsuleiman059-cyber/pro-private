@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sw" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Pro Private</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/theme-dark.css">
+  <link rel="stylesheet" href="css/theme-light.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">Settings</h1>
+    <button class="icon-btn" id="lockBtn" aria-label="Funga app">🔒</button>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Muonekano -->
+    <section class="card set-card">
+      <h2>Muonekano</h2>
+      <div class="row">
+        <div>
+          <strong>Theme</strong>
+          <p class="muted">Nyeusi au nyeupe</p>
+        </div>
+        <button class="btn btn-outline" data-theme-toggle>☀️</button>
+      </div>
+    </section>
+
+    <!-- Usalama -->
+    <section class="card set-card">
+      <h2>Badili PIN</h2>
+      <form id="pinForm" autocomplete="off">
+        <label class="field">PIN ya sasa
+          <input class="input" type="password" id="oldPin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </label>
+        <label class="field">PIN mpya (tarakimu 4 hadi 8)
+          <input class="input" type="password" id="newPin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </label>
+        <label class="field">Rudia PIN mpya
+          <input class="input" type="password" id="confPin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </label>
+        <button class="btn btn-block mt-16" type="submit">Hifadhi PIN mpya</button>
+      </form>
+    </section>
+
+    <!-- Backup -->
+    <section class="card set-card">
+      <h2>Nakala (Backup)</h2>
+      <p class="muted">Tengeneza nakala ya faili zote ili usizipoteze ukifuta data ya browser au ukibadili simu. Nakala inabaki imefungwa. Inafunguliwa kwa PIN ya wakati ilipotengenezwa.</p>
+      <div class="btn-row mt-16">
+        <button class="btn" id="exportBtn">⬇️ Tengeneza nakala</button>
+        <button class="btn btn-outline" id="importBtn">⬆️ Rudisha nakala</button>
+      </div>
+
+      <form id="importForm" class="hidden mt-16" autocomplete="off">
+        <p class="muted" id="importName"></p>
+        <label class="field">PIN ya nakala hiyo
+          <input class="input" type="password" id="importPin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </label>
+        <button class="btn btn-block mt-16" type="submit">Rudisha faili</button>
+      </form>
+    </section>
+
+    <!-- Hifadhi -->
+    <section class="card set-card">
+      <h2>Hifadhi</h2>
+      <p id="infoCount" class="muted">Inapakia...</p>
+      <p id="infoStorage" class="muted"></p>
+    </section>
+
+    <!-- Mwongozo -->
+    <section class="card set-card">
+      <h2>Mwongozo</h2>
+
+      <details>
+        <summary>Jinsi ya kuficha jina la app</summary>
+        <p class="muted">Android (Chrome): wakati wa kuinstall, jina linaonekana kwenye kisanduku. Libadilishe, mfano "Notes", kisha bonyeza Install. iPhone (Safari): kwenye Add to Home Screen, badilisha jina kabla ya kubonyeza Add.</p>
+      </details>
+
+      <details>
+        <summary>Jinsi ya kuondoa picha asili kwenye gallery</summary>
+        <p class="muted">App inatengeneza nakala iliyofungwa. Faili asili inabaki kwenye gallery mpaka uifute mwenyewe. Kwanza fungua faili ndani ya Pro Private uhakikishe linaonekana, kisha lifute kwenye gallery, kisha tupu pia "Recently deleted / Trash" ya gallery. Zima au angalia backup ya Google Photos/iCloud, kwa sababu nakala inaweza kuwa tayari imepanda huko.</p>
+      </details>
+
+      <details>
+        <summary>Jinsi ya kurudisha faili kwenye simu</summary>
+        <p class="muted">Fungua picha, video au wimbo, kisha bonyeza kitufe cha ⬇️. Chagua "Save" kwenye menyu inayotokea, au itaingia kwenye folder la Downloads.</p>
+      </details>
+
+      <details>
+        <summary>Nikisahau PIN?</summary>
+        <p class="muted">Hakuna njia ya kuirudisha. Hilo ndilo linalolinda faili zako. Ukiwa na nakala (backup) na ukaikumbuka PIN ya wakati wa nakala hiyo, unaweza kuirudisha kwenye usakinishaji mpya.</p>
+      </details>
+    </section>
+
+    <!-- Hatari -->
+    <section class="card set-card danger">
+      <h2>Futa kila kitu</h2>
+      <p class="muted">Hufuta faili zote na PIN kwenye simu hii. Hili halirudishwi, isipokuwa kama una nakala (backup).</p>
+      <form id="wipeForm" class="mt-16" autocomplete="off">
+        <label class="field">Weka PIN yako kuthibitisha
+          <input class="input" type="password" id="wipePin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
+        </label>
+        <button class="btn btn-danger btn-block mt-16" type="submit">Futa kila kitu</button>
+      </form>
+    </section>
+
+    <p class="muted center mt-24">Pro Private</p>
+  </main>
+
+  <input type="file" id="importInput" hidden>
+
+  <div class="progress-overlay hidden" id="progress">
+    <div class="progress-card">
+      <div class="spinner"></div>
+      <p id="progressText">Tafadhali subiri...</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottom-nav">
+    <a href="vault.html#photo"><span class="nav-icon">🖼️</span>Picha</a>
+    <a href="vault.html#video"><span class="nav-icon">🎬</span>Video</a>
+    <a href="vault.html#audio"><span class="nav-icon">🎵</span>Muziki</a>
+    <a href="settings.html" class="active"><span class="nav-icon">⚙️</span>Settings</a>
+  </nav>
+
+  <script src="js/crypto.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

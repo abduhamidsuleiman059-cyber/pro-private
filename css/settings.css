@@ -1,0 +1,136 @@
+/* Pro Private - settings.css */
+
+.set-card {
+  margin-bottom: 14px;
+}
+
+.set-card h2 {
+  margin-bottom: 10px;
+  font-size: 17px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.field .input {
+  margin-top: 6px;
+  letter-spacing: 4px;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn-row .btn {
+  flex: 1 1 140px;
+}
+
+details {
+  border-top: 1px solid var(--border);
+  padding: 4px 0;
+}
+
+details:first-of-type {
+  border-top: none;
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+details p {
+  padding-bottom: 12px;
+  line-height: 1.5;
+}
+
+.danger {
+  border-color: var(--danger);
+}
+
+.danger h2 {
+  color: var(--danger);
+}
+
+/* ---------- Progress ---------- */
+.progress-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--overlay);
+}
+
+.progress-card {
+  width: 100%;
+  max-width: 300px;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.progress-card p {
+  margin-top: 12px;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: set-spin 0.8s linear infinite;
+}
+
+@keyframes set-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  z-index: 90;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 14px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}

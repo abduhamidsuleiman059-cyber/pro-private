@@ -1,7 +1,7 @@
 /* Pro Private - Service Worker
    Ukibadili faili yoyote, ongeza namba ya VERSION ili simu zipakue upya. */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'pro-private-' + VERSION;
 
 const FILES = [
@@ -19,7 +19,8 @@ const FILES = [
   './css/pin.css',
   './css/vault.css',
   './css/player.css',
-  './css/viewer.css',
+ './css/viewer.css',
+  './css/settings.css',
   './js/theme.js',
   './js/app.js',
   './js/pin.js',
@@ -28,7 +29,8 @@ const FILES = [
   './js/vault.js',
   './js/player.js',
   './js/viewer.js',
-  './js/media.js',
+ './js/media.js',
+  './js/settings.js',
   './js/backup.js',
   './icons/icon-192.png',
   './icons/icon-512.png'

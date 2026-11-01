@@ -1,23 +1,19 @@
-/* Pro Private - crypto.js
-   Encryption ya kweli kwa PIN (AES-GCM 256, ufunguo unatoka kwenye PIN kwa PBKDF2).
-   PIN yenyewe haihifadhiwi popote. Tunahifadhi "kipimo" kilichofungwa kwa ufunguo,
-   na PIN sahihi tu ndiyo inaweza kukifungua.
-
-   Muhimu: inafanya kazi kwenye https au localhost tu (si file://). */
+/* Pro Private - crypto.js (toleo la 2)
+   - Faili zote zinafungwa kwa UFUNGUO MKUU wa nasibu (AES-GCM 256).
+   - Ufunguo mkuu unafungwa kwa PIN (PBKDF2) na kuhifadhiwa. PIN yenyewe haihifadhiwi.
+   - Kubadili PIN = kufunga upya ufunguo mkuu tu, faili hazigusiwi.
+   Inafanya kazi kwenye https au localhost tu (si file://). */
 
 (function () {
   'use strict';
 
   var ITERATIONS = 200000;
-  var CHECK_TEXT = 'pro-private-ok';
-
-  var K_SALT  = 'pp_salt';
-  var K_CHECK = 'pp_check';
-  var K_LEN   = 'pp_len';
-  var K_SESSION = 'pp_key';   // sessionStorage: inapotea app ikifungwa
+  var K_SALT = 'pp_salt';
+  var K_WRAP = 'pp_wrap';
+  var K_LEN = 'pp_len';
+  var K_SESSION = 'pp_key';      // sessionStorage: inapotea app ikifungwa
 
   var enc = new TextEncoder();
-  var dec = new TextDecoder();
 
   /* ---------- Zana ndogo ---------- */
   function toB64(buf) {
@@ -38,19 +34,7 @@
     return crypto.getRandomValues(new Uint8Array(n));
   }
 
-  /* ---------- Ufunguo kutoka kwenye PIN ---------- */
-  async function deriveKey(pin, saltBytes) {
-    var base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: saltBytes, iterations: ITERATIONS, hash: 'SHA-256' },
-      base,
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  /* ---------- Funga / fungua data (kwa faili baadaye) ---------- */
+  /* ---------- Funga / fungua data ---------- */
   // data: ArrayBuffer au Uint8Array. Inarudisha { iv, data } (zote Uint8Array)
   async function encrypt(key, data) {
     var iv = random(12);
@@ -63,9 +47,43 @@
     return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, data);
   }
 
-  /* ---------- Session (ufunguo unabaki wakati app iko wazi) ---------- */
-  async function saveSession(key) {
-    var raw = await crypto.subtle.exportKey('raw', key);
+  /* ---------- PIN -> ufunguo wa kufunga ufunguo mkuu ---------- */
+  async function pinKey(pin, saltBytes) {
+    var base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: saltBytes, iterations: ITERATIONS, hash: 'SHA-256' },
+      base,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  async function importMaster(raw) {
+    return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+  }
+
+  async function wrapMaster(master, pin, saltBytes) {
+    var pk = await pinKey(pin, saltBytes);
+    var raw = await crypto.subtle.exportKey('raw', master);
+    var e = await encrypt(pk, raw);
+    return { iv: toB64(e.iv), data: toB64(e.data) };
+  }
+
+  // Inarudisha ufunguo mkuu kama PIN ni sahihi, vinginevyo null
+  async function unwrapMaster(wrap, pin, saltBytes) {
+    try {
+      var pk = await pinKey(pin, saltBytes);
+      var raw = await decrypt(pk, fromB64(wrap.iv), fromB64(wrap.data));
+      return await importMaster(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ---------- Session ---------- */
+  async function saveSession(master) {
+    var raw = await crypto.subtle.exportKey('raw', master);
     sessionStorage.setItem(K_SESSION, toB64(raw));
   }
 
@@ -73,7 +91,7 @@
     var s = sessionStorage.getItem(K_SESSION);
     if (!s) return null;
     try {
-      return await crypto.subtle.importKey('raw', fromB64(s), { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+      return await importMaster(fromB64(s));
     } catch (e) {
       return null;
     }
@@ -85,7 +103,7 @@
 
   /* ---------- PIN ---------- */
   function hasPin() {
-    return localStorage.getItem(K_CHECK) !== null && localStorage.getItem(K_SALT) !== null;
+    return localStorage.getItem(K_WRAP) !== null && localStorage.getItem(K_SALT) !== null;
   }
 
   function getPinLength() {
@@ -94,30 +112,63 @@
 
   async function setupPin(pin) {
     var salt = random(16);
-    var key = await deriveKey(pin, salt);
-    var e = await encrypt(key, enc.encode(CHECK_TEXT));
+    var master = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    var wrap = await wrapMaster(master, pin, salt);
 
     localStorage.setItem(K_SALT, toB64(salt));
-    localStorage.setItem(K_CHECK, JSON.stringify({ iv: toB64(e.iv), data: toB64(e.data) }));
+    localStorage.setItem(K_WRAP, JSON.stringify(wrap));
     localStorage.setItem(K_LEN, String(pin.length));
 
-    await saveSession(key);
-    return key;
+    await saveSession(master);
+    return master;
   }
 
-  // Inarudisha ufunguo kama PIN ni sahihi, vinginevyo null
   async function verifyPin(pin) {
     var salt = fromB64(localStorage.getItem(K_SALT));
-    var chk = JSON.parse(localStorage.getItem(K_CHECK));
-    var key = await deriveKey(pin, salt);
-    try {
-      var out = await decrypt(key, fromB64(chk.iv), fromB64(chk.data));
-      if (dec.decode(out) === CHECK_TEXT) {
-        await saveSession(key);
-        return key;
-      }
-    } catch (e) {}
-    return null;
+    var wrap = JSON.parse(localStorage.getItem(K_WRAP));
+    var master = await unwrapMaster(wrap, pin, salt);
+    if (!master) return null;
+    await saveSession(master);
+    return master;
+  }
+
+  // Badili PIN: inarudisha true kama PIN ya zamani ni sahihi
+  async function changePin(oldPin, newPin) {
+    var salt = fromB64(localStorage.getItem(K_SALT));
+    var wrap = JSON.parse(localStorage.getItem(K_WRAP));
+    var master = await unwrapMaster(wrap, oldPin, salt);
+    if (!master) return false;
+
+    var newSalt = random(16);
+    var newWrap = await wrapMaster(master, newPin, newSalt);
+
+    localStorage.setItem(K_SALT, toB64(newSalt));
+    localStorage.setItem(K_WRAP, JSON.stringify(newWrap));
+    localStorage.setItem(K_LEN, String(newPin.length));
+    await saveSession(master);
+    return true;
+  }
+
+  /* ---------- Kwa backup ---------- */
+  function getWrapInfo() {
+    return {
+      salt: localStorage.getItem(K_SALT),
+      wrap: JSON.parse(localStorage.getItem(K_WRAP)),
+      len: getPinLength()
+    };
+  }
+
+  // info = { salt, wrap } kutoka kwenye faili la backup
+  function unwrapFromInfo(info, pin) {
+    return unwrapMaster(info.wrap, pin, fromB64(info.salt));
+  }
+
+  // Futa kila kitu cha PIN na session (data ya faili inafutwa na PPDB.clearAll)
+  function wipe() {
+    ['pp_salt', 'pp_wrap', 'pp_len', 'pp_check', 'pp_fails', 'pp_lock_until'].forEach(function (k) {
+      localStorage.removeItem(k);
+    });
+    sessionStorage.removeItem(K_SESSION);
   }
 
   window.PPCrypto = {
@@ -125,9 +176,15 @@
     getPinLength: getPinLength,
     setupPin: setupPin,
     verifyPin: verifyPin,
+    changePin: changePin,
     getSessionKey: getSessionKey,
     lock: lock,
+    wipe: wipe,
     encrypt: encrypt,
-    decrypt: decrypt
+    decrypt: decrypt,
+    getWrapInfo: getWrapInfo,
+    unwrapFromInfo: unwrapFromInfo,
+    toB64: toB64,
+    fromB64: fromB64
   };
 })();
