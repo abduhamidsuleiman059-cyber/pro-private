@@ -100,7 +100,7 @@
     var bkey = await PPCrypto.unwrapFromInfo(hdr, backupPin);
     if (!bkey) return { ok: false, reason: 'pin' };
 
-    var added = 0, skipped = 0, failed = 0;
+   var added = 0, skipped = 0, failed = 0, lastErr = '';
     var fromB64 = PPCrypto.fromB64;
 
     for (var i = 0; i < hdr.count; i++) {
@@ -111,7 +111,7 @@
         m = JSON.parse(td.decode(await read(await readU32())));
         data = await read(m.blobLen);
       } catch (e) {
-        failed += hdr.count - i;      // faili limekatika, hatuwezi kuendelea
+       failed += hdr.count - i; lastErr = 'Faili la nakala limekatika.';
         break;
       }
 

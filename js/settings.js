@@ -144,7 +144,7 @@
         showProgress('Inarudisha ' + i + ' / ' + n);
       });
     } catch (e) {
-      res = { ok: false, reason: 'error' };
+     res = { ok: false, reason: 'error', err: String((e && e.message) || e) };
     }
     hideProgress();
     window.PPNoLock = false;
@@ -152,7 +152,7 @@
     if (!res.ok) {
       if (res.reason === 'pin') toast('PIN ya nakala hiyo si sahihi.');
       else if (res.reason === 'format') toast('Hili si faili sahihi la nakala ya Pro Private.');
-      else toast('Imeshindwa kurudisha nakala.');
+      else toast('Imeshindwa kurudisha nakala: ' + (res.err || ''));
       return;
     }
 
@@ -162,7 +162,7 @@
 
     var parts = ['Zimerudishwa: ' + res.added + '.'];
     if (res.skipped) parts.push('Zilizokuwepo tayari: ' + res.skipped + '.');
-    if (res.failed) parts.push('Zilizoshindwa: ' + res.failed + '.');
+    if (res.failed) parts.push('Zilizoshindwa: ' + res.failed + ' (' + (res.err || 'sababu haijulikani') + ').');
     toast(parts.join(' '));
     refreshInfo();
   });

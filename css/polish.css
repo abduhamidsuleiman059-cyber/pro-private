@@ -1,0 +1,95 @@
+/* Pro Private - polish.css
+   Inapakiwa MWISHO, inaongeza maboresho bila kubadilisha CSS nyingine. */
+
+/* ---------- Picha: gap na kona za mviringo ---------- */
+.photo-grid {
+  gap: 8px;
+}
+
+.tile {
+  border-radius: 12px;
+}
+
+.tile img {
+  object-fit: cover;
+}
+
+/* ---------- Video: kadi za 16:9, picha ijaze bila black bars ---------- */
+.video-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.video-grid .tile {
+  aspect-ratio: 16 / 9;
+}
+
+/* Kitufe cha play chenye blur */
+.tile .play {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  font-size: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.tile .dur {
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Emoji za juu na chini: ukubwa sawa ---------- */
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.bottom-nav .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ---------- Muziki: jina refu lisitoke nje ---------- */
+.audio-info {
+  min-width: 0;
+}
+
+.audio-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Toast ionekane hata juu ya overlay ya "Inaficha..." ---------- */
+.toast {
+  z-index: 110;
+}
+
+/* ---------- Upau wa matumizi ya nafasi (Settings) ---------- */
+.usage-bar {
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.usage-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
