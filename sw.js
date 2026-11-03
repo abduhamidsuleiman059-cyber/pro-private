@@ -1,7 +1,8 @@
 /* Pro Private - Service Worker
+   Inafanya app ifanye kazi offline kwa kuhifadhi faili za msingi.
    Ukibadili faili yoyote, ongeza namba ya VERSION ili simu zipakue upya. */
 
-const VERSION = 'v3';
+const VERSION = 'v5';
 const CACHE = 'pro-private-' + VERSION;
 
 const FILES = [
@@ -19,8 +20,9 @@ const FILES = [
   './css/pin.css',
   './css/vault.css',
   './css/player.css',
- './css/viewer.css',
+  './css/viewer.css',
   './css/settings.css',
+  './css/polish.css',
   './js/theme.js',
   './js/app.js',
   './js/pin.js',
@@ -29,20 +31,21 @@ const FILES = [
   './js/vault.js',
   './js/player.js',
   './js/viewer.js',
- './js/media.js',
+  './js/media.js',
   './js/settings.js',
   './js/backup.js',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];
 
-/* Install: hifadhi kila faili kivyake. Faili isiyopo bado haivunji install. */
+/* Install: hifadhi kila faili kivyake.
+   Faili ambayo bado haijatengenezwa haivunji install. */
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE).then(function (cache) {
       return Promise.all(
         FILES.map(function (url) {
-          return cache.add(url).catch(function () {});
+          return cache.add(new Request(url, { cache: 'reload' })).catch(function () {});
         })
       );
     }).then(function () {

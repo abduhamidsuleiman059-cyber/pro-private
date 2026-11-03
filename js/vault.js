@@ -1,10 +1,12 @@
 /* Pro Private - vault.js
    Ukurasa mkuu: tabo (Picha, Video, Muziki), kuongeza faili, kuchagua na kufuta.
-   Kila faili, jina lake na thumbnail yake vinafungwa (encrypted) kabla ya kuhifadhiwa. */
+   Kila faili, jina lake na thumbnail yake vinafungwa (encrypted) kabla ya kuhifadhiwa.
+   Thumbnails zinafunguliwa (decrypt) zinapokaribia kuonekana tu (lazy loading). */
 
 (function () {
   'use strict';
 
+  var WARN_MB = 50;        // onyo: file kubwa itachukua nafasi nyingi
   var MAX_FILE_MB = 150;   // faili kubwa kuliko hili halikubaliwi (kulinda simu isizimike)
 
   var TABS = {
@@ -29,6 +31,7 @@
   var loadToken = 0;
   var selecting = false;
   var selected = {};
+  var lazyObserver = null;
 
   /* ---------- Zana ---------- */
   function el(tag, cls, text) {
@@ -167,6 +170,12 @@
     var t = TABS[tab];
     var ok = 0, skipped = 0, tooBig = 0, failed = 0, full = false;
 
+    // Onyo la file kubwa (zaidi ya WARN_MB lakini ndani ya kikomo)
+    var big = files.filter(function (f) {
+      return f.size > WARN_MB * 1048576 && f.size <= MAX_FILE_MB * 1048576;
+    }).length;
+    if (big) toast('File kubwa, itachukua nafasi nyingi.');
+
     window.PPNoLock = true;
     try {
       for (var i = 0; i < files.length; i++) {
@@ -222,6 +231,7 @@
 
     var parts = [];
     if (ok) parts.push('Zimefichwa: ' + ok + '. Futa asili kwenye gallery ili zibaki siri.');
+    if (big) parts.push('File kubwa (zaidi ya ' + WARN_MB + ' MB): ' + big + '. Zinachukua nafasi nyingi.');
     if (tooBig) parts.push('Kubwa mno (zaidi ya ' + MAX_FILE_MB + ' MB): ' + tooBig + '.');
     if (skipped) parts.push('Aina isiyofaa: ' + skipped + '.');
     if (failed) parts.push('Zilizoshindwa: ' + failed + '.');
@@ -244,29 +254,69 @@
       var r = raw[i];
       try {
         var m = JSON.parse(td.decode(await PPCrypto.decrypt(key, r.metaIv, r.meta)));
-        var url = null;
-        if (r.thumb) {
-          var tb = await PPCrypto.decrypt(key, r.thumbIv, r.thumb);
-          url = URL.createObjectURL(new Blob([tb], { type: 'image/jpeg' }));
-        }
         out.push({
           id: r.id, added: r.added,
           name: m.name, size: m.size, duration: m.duration, mime: m.mime,
-          thumbUrl: url
+          thumbIv: r.thumbIv, thumbData: r.thumb      // thumbnail inafunguliwa baadaye (lazy)
         });
       } catch (e) {}
     }
 
-    if (token !== loadToken) {          // tabo ilibadilishwa wakati tunapakia
-      out.forEach(function (o) { if (o.thumbUrl) URL.revokeObjectURL(o.thumbUrl); });
-      return;
-    }
+    if (token !== loadToken) return;     // tabo ilibadilishwa wakati tunapakia
 
     revokeUrls();
-    out.forEach(function (o) { if (o.thumbUrl) urls.push(o.thumbUrl); });
     out.sort(function (a, b) { return b.added - a.added; });
     items = out;
     render();
+  }
+
+  /* ---------- Lazy loading: thumbnail inafunguliwa ikikaribia kuonekana ---------- */
+  function setupLazy(grid) {
+    if (lazyObserver) { lazyObserver.disconnect(); lazyObserver = null; }
+    var tiles = grid.querySelectorAll('[data-lazy]');
+    if (!tiles.length) return;
+
+    function fill(tile) {
+      var id = tile.getAttribute('data-id');
+      tile.removeAttribute('data-lazy');
+      var it = null;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].id === id) { it = items[i]; break; }
+      }
+      if (!it || !it.thumbData) return;
+
+      PPCrypto.decrypt(key, it.thumbIv, it.thumbData).then(function (tb) {
+        if (!tile.isConnected) return;
+        var url = URL.createObjectURL(new Blob([tb], { type: 'image/jpeg' }));
+        urls.push(url);
+        var img = document.createElement('img');
+        img.alt = '';
+        img.draggable = false;
+        img.decoding = 'async';
+        img.onload = function () {
+          var ph = tile.querySelector('.ph');
+          if (ph) ph.remove();
+        };
+        img.src = url;
+        tile.insertBefore(img, tile.firstChild);
+      }).catch(function () {});
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      for (var i = 0; i < tiles.length; i++) fill(tiles[i]);
+      return;
+    }
+
+    lazyObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          lazyObserver.unobserve(en.target);
+          fill(en.target);
+        }
+      });
+    }, { rootMargin: '300px' });
+
+    for (var j = 0; j < tiles.length; j++) lazyObserver.observe(tiles[j]);
   }
 
   function render() {
@@ -302,21 +352,15 @@
       return;
     }
 
-    var grid = el('div', 'photo-grid');
+    var grid = el('div', 'photo-grid' + (tab === 'video' ? ' video-grid' : ''));
     items.forEach(function (it) {
       var tile = el('div', 'tile');
       tile.setAttribute('data-id', it.id);
       if (selected[it.id]) tile.classList.add('selected');
 
-      if (it.thumbUrl) {
-        var img = document.createElement('img');
-        img.src = it.thumbUrl;
-        img.alt = '';
-        img.draggable = false;
-        tile.appendChild(img);
-      } else {
-        tile.appendChild(el('div', 'ph', t.icon));
-      }
+      // Ikoni mpaka thumbnail ipakiwe (lazy)
+      tile.appendChild(el('div', 'ph', t.icon));
+      if (it.thumbData) tile.setAttribute('data-lazy', '1');
 
       if (tab === 'video') {
         tile.appendChild(el('div', 'play', '▶'));
@@ -326,6 +370,7 @@
       grid.appendChild(tile);
     });
     content.appendChild(grid);
+    setupLazy(grid);
   }
 
   /* ---------- Tabo ---------- */

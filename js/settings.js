@@ -1,5 +1,5 @@
 /* Pro Private - settings.js
-   Badili PIN, nakala (backup), hifadhi, futa kila kitu. */
+   Sakinisha app, badili PIN, nakala (backup), hifadhi, futa data zote. */
 
 (function () {
   'use strict';
@@ -40,6 +40,12 @@
 
   /* ---------- Taarifa za hifadhi ---------- */
   async function refreshInfo() {
+    await refreshCounts();
+    await refreshUsage();
+  }
+
+  // Idadi ya faili kwa kila aina
+  async function refreshCounts() {
     try {
       var all = await PPDB.list();
       var c = { photo: 0, video: 0, audio: 0 };
@@ -48,13 +54,37 @@
     } catch (e) {
       $('infoCount').textContent = 'Imeshindwa kusoma hifadhi.';
     }
+  }
 
-    if (navigator.storage && navigator.storage.estimate) {
-      try {
+  // Jumla ya ukubwa wa faili zako + nafasi iliyobaki
+  async function refreshUsage() {
+    try {
+      var tdec = new TextDecoder();
+      var list = await PPDB.list();
+      var total = 0;
+      for (var i = 0; i < list.length; i++) {
+        try {
+          var mm = JSON.parse(tdec.decode(await PPCrypto.decrypt(key, list[i].metaIv, list[i].meta)));
+          total += mm.size || 0;
+        } catch (e) {}
+      }
+
+      var line = 'Faili zako: ' + fmtSize(total) + '.';
+      var pct = 0;
+
+      if (navigator.storage && navigator.storage.estimate) {
         var est = await navigator.storage.estimate();
-        $('infoStorage').textContent = 'Nafasi iliyotumika: ' + fmtSize(est.usage) + ' kati ya ' + fmtSize(est.quota) + ' zinazoruhusiwa.';
-      } catch (e) {}
-    }
+        if (est && est.quota) {
+          var left = Math.max(0, est.quota - est.usage);
+          line += ' Nafasi iliyotumika na app: ' + fmtSize(est.usage) + '. Imebaki ~ ' + Math.round(left / 1048576).toLocaleString('en-US') + ' MB.';
+          pct = Math.min(100, (est.usage / est.quota) * 100);
+        }
+      }
+
+      $('infoStorage').textContent = line;
+      var fill = $('usageFill');
+      if (fill) fill.style.width = Math.max(pct, total ? 2 : 0) + '%';
+    } catch (e) {}
   }
 
   /* ---------- Funga app ---------- */
@@ -144,7 +174,7 @@
         showProgress('Inarudisha ' + i + ' / ' + n);
       });
     } catch (e) {
-     res = { ok: false, reason: 'error', err: String((e && e.message) || e) };
+      res = { ok: false, reason: 'error', err: String((e && e.message) || e) };
     }
     hideProgress();
     window.PPNoLock = false;
@@ -167,7 +197,7 @@
     refreshInfo();
   });
 
-  /* ---------- Futa kila kitu ---------- */
+  /* ---------- Futa data zote ---------- */
   $('wipeForm').addEventListener('submit', async function (ev) {
     ev.preventDefault();
     var pin = $('wipePin').value;
@@ -188,6 +218,61 @@
     PPCrypto.wipe();
     location.replace('pin.html');
   });
+
+  /* ---------- Sakinisha kama App ---------- */
+  var deferredInstall = null;
+  var installBtn = $('installBtn');
+  var installHint = $('installHint');
+
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true;
+  }
+
+  function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  function updateInstallUI() {
+    if (isStandalone()) {
+      installBtn.classList.add('hidden');
+      installHint.textContent = 'Tayari umesakinisha Pro Private kama app. ✅';
+      return;
+    }
+    installBtn.classList.remove('hidden');
+    if (isIOS()) {
+      installHint.textContent = 'iPhone: bonyeza kitufe cha Share kwenye Safari, kisha "Add to Home Screen".';
+    } else if (deferredInstall) {
+      installHint.textContent = 'Itaingia kwenye orodha ya apps zako na kufunguka bila address bar ya browser.';
+    } else {
+      installHint.textContent = 'Bonyeza kitufe hapa chini. Kama hakitoi dirisha, tumia menyu ya browser (⋮) kisha "Install app" au "Add to Home screen".';
+    }
+  }
+
+  window.addEventListener('beforeinstallprompt', function (ev) {
+    ev.preventDefault();
+    deferredInstall = ev;
+    updateInstallUI();
+  });
+
+  window.addEventListener('appinstalled', function () {
+    deferredInstall = null;
+    toast('Pro Private imesakinishwa kama app.');
+    updateInstallUI();
+  });
+
+  installBtn.addEventListener('click', async function () {
+    if (!deferredInstall) {
+      toast(isIOS() ? 'Tumia Share → Add to Home Screen.' : 'Tumia menyu ya browser (⋮) → Install app.');
+      return;
+    }
+    deferredInstall.prompt();
+    try { await deferredInstall.userChoice; } catch (e) {}
+    deferredInstall = null;
+    updateInstallUI();
+  });
+
+  updateInstallUI();
 
   /* ---------- Kuanza ---------- */
   async function init() {

@@ -75,7 +75,7 @@
   }
 
   /* ---------- Kurudisha nakala ---------- */
-  // Inarudisha { ok, reason?, added, skipped, failed }
+  // Inarudisha { ok, reason?, added, skipped, failed, err }
   async function importFile(file, backupPin, currentKey, onProgress) {
     var pos = 0;
 
@@ -100,7 +100,7 @@
     var bkey = await PPCrypto.unwrapFromInfo(hdr, backupPin);
     if (!bkey) return { ok: false, reason: 'pin' };
 
-   var added = 0, skipped = 0, failed = 0, lastErr = '';
+    var added = 0, skipped = 0, failed = 0, lastErr = '';
     var fromB64 = PPCrypto.fromB64;
 
     for (var i = 0; i < hdr.count; i++) {
@@ -111,7 +111,8 @@
         m = JSON.parse(td.decode(await read(await readU32())));
         data = await read(m.blobLen);
       } catch (e) {
-       failed += hdr.count - i; lastErr = 'Faili la nakala limekatika.';
+        failed += hdr.count - i;        // faili limekatika, hatuwezi kuendelea
+        lastErr = 'Faili la nakala limekatika.';
         break;
       }
 
@@ -145,10 +146,11 @@
         added++;
       } catch (e) {
         failed++;
+        lastErr = (e && e.name ? e.name + ': ' : '') + (e && e.message ? e.message : String(e));
       }
     }
 
-    return { ok: true, added: added, skipped: skipped, failed: failed };
+    return { ok: true, added: added, skipped: skipped, failed: failed, err: lastErr };
   }
 
   window.PPBackup = {

@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/theme-light.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/polish.css">
   <script src="js/theme.js"></script>
 </head>
 <body>
@@ -34,6 +35,13 @@
         </div>
         <button class="btn btn-outline" data-theme-toggle>☀️</button>
       </div>
+    </section>
+
+    <!-- Sakinisha -->
+    <section class="card set-card" id="installCard">
+      <h2>Sakinisha app</h2>
+      <p class="muted" id="installHint"></p>
+      <button class="btn btn-block mt-16" id="installBtn">⬇️ Sakinisha kama App</button>
     </section>
 
     <!-- Usalama -->
@@ -76,6 +84,7 @@
       <h2>Hifadhi</h2>
       <p id="infoCount" class="muted">Inapakia...</p>
       <p id="infoStorage" class="muted"></p>
+      <div class="usage-bar"><span id="usageFill"></span></div>
     </section>
 
     <!-- Mwongozo -->
@@ -105,13 +114,13 @@
 
     <!-- Hatari -->
     <section class="card set-card danger">
-      <h2>Futa kila kitu</h2>
+      <h2>Futa data zote</h2>
       <p class="muted">Hufuta faili zote na PIN kwenye simu hii. Hili halirudishwi, isipokuwa kama una nakala (backup).</p>
       <form id="wipeForm" class="mt-16" autocomplete="off">
         <label class="field">Weka PIN yako kuthibitisha
           <input class="input" type="password" id="wipePin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off">
         </label>
-        <button class="btn btn-danger btn-block mt-16" type="submit">Futa kila kitu</button>
+        <button class="btn btn-danger btn-block mt-16" type="submit">Futa data zote</button>
       </form>
     </section>
 
