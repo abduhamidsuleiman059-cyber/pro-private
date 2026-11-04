@@ -1,0 +1,76 @@
+/* Pro Private - icons.css
+   Muonekano wa icons za kisasa (zinawekwa na js/theme.js).
+   Rangi inafuata rangi ya maandishi, kwa hiyo zinafaa theme nyeusi na nyeupe. */
+
+.ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  flex: none;
+  line-height: 1;
+  vertical-align: -0.14em;
+  color: inherit;
+}
+
+.ico svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Kitufe chenye maandishi: icon na jina vikae sawa */
+.btn .ico {
+  font-size: 19px;
+  vertical-align: middle;
+}
+
+/* Juu na chini: icons nyembamba kidogo, zinazotulia */
+.icon-btn .ico svg {
+  stroke-width: 1.8;
+}
+
+.bottom-nav .ico svg {
+  stroke-width: 1.7;
+}
+
+.bottom-nav .active .ico svg {
+  stroke-width: 2.3;
+}
+
+/* Icons kubwa za mapambo (ukurasa mtupu, orodha ya muziki): nyembamba na hafifu */
+.empty .big .ico,
+.big .ico {
+  opacity: 0.55;
+}
+
+.empty .big .ico svg,
+.big .ico svg {
+  stroke-width: 1.2;
+}
+
+/* Kitufe cha play kwenye video: mshale uwe katikati kwa macho */
+.tile .play .ico {
+  font-size: 18px;
+  margin-left: 2px;
+}
+
+.tile .dur .ico {
+  font-size: 11px;
+}
+
+/* Alama ya kuchagua (check) */
+.check .ico svg {
+  stroke-width: 3;
+}
+
+/* Muziki: icon ndani ya sanduku */
+.audio-icon .ico {
+  font-size: 22px;
+}
+
+.audio-icon .ico svg {
+  stroke-width: 1.8;
+}
