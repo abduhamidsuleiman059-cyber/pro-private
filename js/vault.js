@@ -63,6 +63,39 @@
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
+  // ---- Muziki: rangi 3 mchanganyiko + herufi ya kwanza ----
+  var GRADS = [
+    ['#ff5f6d', '#ffc371', '#ff3cac'],
+    ['#4facfe', '#00f2fe', '#7b61ff'],
+    ['#43e97b', '#38f9d7', '#11998e'],
+    ['#fa709a', '#fee140', '#f78ca0'],
+    ['#a18cd1', '#fbc2eb', '#6a11cb'],
+    ['#f7971e', '#ffd200', '#ff512f'],
+    ['#00c6ff', '#0072ff', '#7f00ff'],
+    ['#ee0979', '#ff6a00', '#7928ca'],
+    ['#11998e', '#38ef7d', '#0575e6'],
+    ['#f857a6', '#ff5858', '#7f53ac']
+  ];
+
+  function hashStr(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) {
+      h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h);
+  }
+
+  function gradientFor(name) {
+    var g = GRADS[hashStr(name || '') % GRADS.length];
+    return 'linear-gradient(135deg, ' + g[0] + ' 0%, ' + g[1] + ' 52%, ' + g[2] + ' 100%)';
+  }
+
+  function firstLetter(name) {
+    var m = null;
+    try { m = (name || '').match(/[\p{L}\p{N}]/u); } catch (e) { m = (name || '').match(/[A-Za-z0-9]/); }
+    return m ? m[0].toUpperCase() : '';
+  }
+
   var toastTimer = null;
   function toast(text) {
     var t = $('toast');
@@ -163,11 +196,12 @@
   }
 
   /* ---------- Kuongeza faili ---------- */
-  async function addFiles(fileList) {
+  async function addFiles(fileList, type) {
     var files = Array.prototype.slice.call(fileList);
     if (!files.length) return;
 
-    var t = TABS[tab];
+    type = TABS[type] ? type : tab;
+    var t = TABS[type];
     var ok = 0, skipped = 0, tooBig = 0, failed = 0, full = false;
 
     // Onyo la file kubwa (zaidi ya WARN_MB lakini ndani ya kikomo)
@@ -189,9 +223,9 @@
           var duration = 0;
           var thumb = null;
 
-          if (tab === 'photo') {
+          if (type === 'photo') {
             thumb = await photoThumb(f);
-          } else if (tab === 'video') {
+          } else if (type === 'video') {
             var vi = await videoInfo(f);
             duration = vi.duration;
             thumb = vi.thumb;
@@ -207,7 +241,7 @@
           await PPDB.add(
             {
               id: id,
-              type: tab,
+              type: type,
               added: Date.now() + i,
               metaIv: meta.iv,
               meta: meta.data,
@@ -227,7 +261,7 @@
       hideProgress();
     }
 
-    await load();
+    if (type !== tab) { setTab(type); } else { await load(); }
 
     var parts = [];
     if (ok) parts.push('Zimefichwa: ' + ok + '. Futa asili kwenye gallery ili zibaki siri.');
@@ -341,7 +375,10 @@
         row.setAttribute('data-id', it.id);
         if (selected[it.id]) row.classList.add('selected');
 
-        row.appendChild(el('div', 'audio-icon', '🎵'));
+        var letter = firstLetter(it.name);
+        var ic = el('div', 'audio-icon', letter || '🎵');
+        ic.style.background = gradientFor(it.name);
+        row.appendChild(ic);
         var info = el('div', 'audio-info');
         info.appendChild(el('div', 'audio-name', it.name));
         info.appendChild(el('div', 'muted', fmtDur(it.duration) + ' · ' + fmtSize(it.size)));
@@ -406,6 +443,7 @@
   }
 
   function enterSelect() {
+    closeSheet();
     selecting = true;
     selected = {};
     selectBar.classList.remove('hidden');
@@ -504,24 +542,68 @@
     }
   });
 
-  /* ---------- Kitufe cha + ---------- */
-  addBtn.addEventListener('click', function () {
+  /* ---------- Kitufe cha + (menyu ya kuongeza) ---------- */
+  var sheet = $('addSheet');
+  var pendingType = null;
+
+  function openSheet() {
+    if (!sheet || selecting) return;
+    var opts = sheet.querySelectorAll('.add-opt');
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].classList.toggle('current', opts[i].getAttribute('data-add') === tab);
+    }
+    sheet.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+    addBtn.classList.add('open');
+    vibrate(10);
+  }
+
+  function closeSheet() {
+    if (!sheet) return;
+    sheet.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+    addBtn.classList.remove('open');
+  }
+
+  function pickFiles(type) {
+    if (!TABS[type]) type = tab;
+    pendingType = type;
+    closeSheet();
     window.PPNoLock = true;                 // usifunge app wakati wa kuchagua faili
     setTimeout(function () { window.PPNoLock = false; }, 180000);
+    fileInput.accept = TABS[type].accept;
     fileInput.value = '';
     fileInput.click();
+  }
+
+  addBtn.addEventListener('click', function () {
+    if (sheet && sheet.classList.contains('open')) closeSheet(); else openSheet();
+  });
+
+  if (sheet) {
+    sheet.addEventListener('click', function (ev) {
+      if (ev.target.closest('[data-close]')) { closeSheet(); return; }
+      var opt = ev.target.closest('[data-add]');
+      if (opt) pickFiles(opt.getAttribute('data-add'));
+    });
+  }
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') closeSheet();
   });
 
   fileInput.addEventListener('change', function () {
     var files = fileInput.files;
+    var type = pendingType || tab;
+    pendingType = null;
     if (files && files.length) {
-      addFiles(files);
+      addFiles(files, type);
     } else {
       window.PPNoLock = false;
     }
   });
 
-  fileInput.addEventListener('cancel', function () { window.PPNoLock = false; });
+  fileInput.addEventListener('cancel', function () { window.PPNoLock = false; pendingType = null; });
 
   /* ---------- Funga app ---------- */
   $('lockBtn').addEventListener('click', function () {

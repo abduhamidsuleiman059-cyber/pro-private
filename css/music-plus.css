@@ -1,0 +1,213 @@
+/* Pro Private - music-plus.css
+   1) Muziki: kisanduku chenye rangi 3 mchanganyiko na herufi ya kwanza ya jina.
+   2) Kitufe cha +: kimeboreshwa na menyu ya kuongeza Picha / Video / Muziki.
+   Pakia baada ya vault.css na polish.css. */
+
+/* ================= MUZIKI ================= */
+.audio-icon {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+/* mwanga laini juu-kushoto kwa muonekano wa premium */
+.audio-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 25% 18%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 55%);
+  pointer-events: none;
+}
+
+.audio-item {
+  gap: 14px;
+}
+
+/* ================= KITUFE CHA + ================= */
+.fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  font-size: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.fab .fab-plus {
+  transition: transform 0.28s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.fab.open .fab-plus {
+  transform: rotate(135deg);
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
+
+/* ---------- Menyu (bottom sheet) ---------- */
+.add-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.add-sheet.open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.add-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.add-sheet.open .add-backdrop {
+  opacity: 1;
+}
+
+.add-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.add-sheet.open .add-panel {
+  transform: translateY(0);
+}
+
+.add-grip {
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 10px;
+  border-radius: 99px;
+  background: var(--border);
+}
+
+.add-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.add-head h3 {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.add-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 68px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s ease;
+}
+
+.add-opt:active {
+  transform: scale(0.98);
+  background: var(--card-hover);
+}
+
+.add-opt.current {
+  border-color: var(--accent);
+}
+
+.add-ico {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 24px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.add-photo { background: linear-gradient(135deg, #4facfe, #00f2fe 55%, #7b61ff); }
+.add-video { background: linear-gradient(135deg, #ff5f6d, #ffc371 55%, #ff3cac); }
+.add-audio { background: linear-gradient(135deg, #a18cd1, #fbc2eb 55%, #6a11cb); }
+
+.add-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.add-txt strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.add-txt small {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.add-note {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add-panel,
+  .add-backdrop,
+  .fab .fab-plus {
+    transition: none;
+  }
+}

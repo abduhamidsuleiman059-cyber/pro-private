@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/vault.css">
   <link rel="stylesheet" href="css/polish.css">
+  <link rel="stylesheet" href="css/music-plus.css">
   <script src="js/theme.js"></script>
 </head>
 <body>
@@ -41,7 +42,39 @@
     <section id="content"></section>
   </main>
 
-  <button class="fab" id="addBtn" aria-label="Ongeza faili">+</button>
+  <button class="fab" id="addBtn" aria-label="Ongeza faili" aria-haspopup="true">
+    <svg class="fab-plus" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- Menyu ya kuongeza faili -->
+  <div class="add-sheet" id="addSheet" aria-hidden="true">
+    <div class="add-backdrop" data-close></div>
+    <div class="add-panel" role="dialog" aria-label="Ongeza faili">
+      <div class="add-grip"></div>
+      <div class="add-head">
+        <div>
+          <h3>Ongeza faili</h3>
+          <p class="muted">Chagua aina ya faili la kuficha</p>
+        </div>
+        <button class="icon-btn" data-close aria-label="Funga">✕</button>
+      </div>
+      <div class="add-options">
+        <button class="add-opt" data-add="photo">
+          <span class="add-ico add-photo">🖼️</span>
+          <span class="add-txt"><strong>Picha</strong><small>JPG, PNG, WEBP...</small></span>
+        </button>
+        <button class="add-opt" data-add="video">
+          <span class="add-ico add-video">🎬</span>
+          <span class="add-txt"><strong>Video</strong><small>MP4, MKV, WEBM...</small></span>
+        </button>
+        <button class="add-opt" data-add="audio">
+          <span class="add-ico add-audio">🎵</span>
+          <span class="add-txt"><strong>Muziki</strong><small>MP3, M4A, WAV...</small></span>
+        </button>
+      </div>
+      <p class="muted add-note">Unaweza kuchagua faili nyingi kwa pamoja. Faili kubwa kuliko 50 MB zinachukua nafasi nyingi.</p>
+    </div>
+  </div>
 
   <nav class="bottom-nav">
     <button data-tab="photo" class="active"><span class="nav-icon">🖼️</span>Picha</button>
