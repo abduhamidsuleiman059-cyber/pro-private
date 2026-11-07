@@ -2,7 +2,7 @@
 <html lang="sw" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,6 +38,16 @@
     <div class="section-head">
       <h2 id="sectionTitle">Picha</h2>
       <span class="muted" id="sectionCount"></span>
+    </div>
+
+    <!-- Tafuta muziki (inaonekana kwenye tabo ya Muziki tu) -->
+    <div class="search-wrap hidden" id="searchWrap">
+      <div class="search-bar">
+        <svg class="search-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" inputmode="search" enterkeyhint="search" placeholder="Tafuta wimbo au msanii..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Tafuta wimbo au msanii">
+        <button type="button" class="search-clear hidden" id="searchClear" aria-label="Futa maandishi">✕</button>
+      </div>
+      <p class="muted search-info hidden" id="searchInfo"></p>
     </div>
     <section id="content"></section>
   </main>
@@ -97,6 +107,7 @@
 
   <script src="js/crypto.js"></script>
   <script src="js/db.js"></script>
+  <script src="js/songname.js"></script>
   <script src="js/vault.js"></script>
   <script src="js/app.js"></script>
 </body>

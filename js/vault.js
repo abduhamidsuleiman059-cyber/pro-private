@@ -32,6 +32,11 @@
   var selecting = false;
   var selected = {};
   var lazyObserver = null;
+  var query = '';
+  var searchWrap = $('searchWrap');
+  var searchInput = $('searchInput');
+  var searchClear = $('searchClear');
+  var searchInfo = $('searchInfo');
 
   /* ---------- Zana ---------- */
   function el(tag, cls, text) {
@@ -63,38 +68,9 @@
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
-  // ---- Muziki: rangi 3 mchanganyiko + herufi ya kwanza ----
-  var GRADS = [
-    ['#ff5f6d', '#ffc371', '#ff3cac'],
-    ['#4facfe', '#00f2fe', '#7b61ff'],
-    ['#43e97b', '#38f9d7', '#11998e'],
-    ['#fa709a', '#fee140', '#f78ca0'],
-    ['#a18cd1', '#fbc2eb', '#6a11cb'],
-    ['#f7971e', '#ffd200', '#ff512f'],
-    ['#00c6ff', '#0072ff', '#7f00ff'],
-    ['#ee0979', '#ff6a00', '#7928ca'],
-    ['#11998e', '#38ef7d', '#0575e6'],
-    ['#f857a6', '#ff5858', '#7f53ac']
-  ];
-
-  function hashStr(str) {
-    var h = 0;
-    for (var i = 0; i < str.length; i++) {
-      h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    }
-    return Math.abs(h);
-  }
-
-  function gradientFor(name) {
-    var g = GRADS[hashStr(name || '') % GRADS.length];
-    return 'linear-gradient(135deg, ' + g[0] + ' 0%, ' + g[1] + ' 52%, ' + g[2] + ' 100%)';
-  }
-
-  function firstLetter(name) {
-    var m = null;
-    try { m = (name || '').match(/[\p{L}\p{N}]/u); } catch (e) { m = (name || '').match(/[A-Za-z0-9]/); }
-    return m ? m[0].toUpperCase() : '';
-  }
+  // ---- Muziki: majina safi (js/songname.js), rangi 3 na herufi ya kwanza ----
+  function getGradientForLetter(letter) { return PPSong.getGradientForLetter(letter); }
+  function firstLetter(text) { return PPSong.firstLetter(text); }
 
   var toastTimer = null;
   function toast(text) {
@@ -214,7 +190,7 @@
     try {
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
-        showProgress('Inaficha ' + (i + 1) + ' / ' + files.length, f.name);
+        showProgress('Inaficha ' + (i + 1) + ' / ' + files.length, type === 'audio' ? PPSong.parse(f.name).title : f.name);
 
         if (f.type && f.type.indexOf(t.prefix) !== 0) { skipped++; continue; }
         if (f.size > MAX_FILE_MB * 1048576) { tooBig++; continue; }
@@ -293,6 +269,11 @@
           name: m.name, size: m.size, duration: m.duration, mime: m.mime,
           thumbIv: r.thumbIv, thumbData: r.thumb      // thumbnail inafunguliwa baadaye (lazy)
         });
+        if (r.type === 'audio') {
+          var last = out[out.length - 1];
+          last.song = PPSong.parse(m.name);
+          last.hay = PPSong.haystack(last.song);
+        }
       } catch (e) {}
     }
 
@@ -353,10 +334,26 @@
     for (var j = 0; j < tiles.length; j++) lazyObserver.observe(tiles[j]);
   }
 
+  function visibleItems() {
+    if (tab !== 'audio' || !query.trim()) return items;
+    return items.filter(function (it) { return it.hay && PPSong.matches(it.hay, query); });
+  }
+
+  function updateSearchUI(shown) {
+    var isAudio = tab === 'audio';
+    searchWrap.classList.toggle('hidden', !(isAudio && (items.length || query)));
+    searchClear.classList.toggle('hidden', !query);
+    var searching = isAudio && !!query.trim();
+    searchInfo.classList.toggle('hidden', !searching);
+    if (searching) searchInfo.textContent = 'Matokeo: ' + shown;
+  }
+
   function render() {
     var t = TABS[tab];
+    var shown = visibleItems();
     $('sectionTitle').textContent = t.title;
-    $('sectionCount').textContent = items.length ? items.length + ' faili' : '';
+    $('sectionCount').textContent = shown.length ? shown.length + ' faili' : (items.length && tab === 'audio' ? '0 faili' : '');
+    updateSearchUI(shown.length);
     content.innerHTML = '';
     content.classList.toggle('selecting', selecting);
 
@@ -370,19 +367,40 @@
     }
 
     if (tab === 'audio') {
-      items.forEach(function (it) {
+      if (!shown.length) {
+        var none = el('div', 'empty no-results');
+        none.appendChild(el('div', 'big', '🎵'));
+        none.appendChild(el('p', '', 'Hakuna wimbo uliopatikana'));
+        var showAll = el('button', 'btn btn-outline show-all', 'Onyesha zote');
+        showAll.type = 'button';
+        showAll.addEventListener('click', function () { setQuery(''); });
+        none.appendChild(showAll);
+        content.appendChild(none);
+        return;
+      }
+
+      shown.forEach(function (it) {
         var row = el('div', 'list-item audio-item');
         row.setAttribute('data-id', it.id);
         if (selected[it.id]) row.classList.add('selected');
 
-        var letter = firstLetter(it.name);
-        var ic = el('div', 'audio-icon', letter || '🎵');
-        ic.style.background = gradientFor(it.name);
+        var ic = el('div', 'audio-icon', firstLetter(it.song.title) || '🎵');
+        ic.style.background = getGradientForLetter(firstLetter(it.song.title));
         row.appendChild(ic);
+
         var info = el('div', 'audio-info');
-        info.appendChild(el('div', 'audio-name', it.name));
-        info.appendChild(el('div', 'muted', fmtDur(it.duration) + ' · ' + fmtSize(it.size)));
+        info.appendChild(el('div', 'audio-name', it.song.title));
+        var meta = el('div', 'audio-meta');
+        meta.appendChild(el('span', 'am-artist', it.song.artist));
+        meta.appendChild(el('span', 'am-rest', ' \u2022 ' + fmtDur(it.duration) + ' \u2022 ' + fmtSize(it.size)));
+        info.appendChild(meta);
         row.appendChild(info);
+
+        var play = el('button', 'audio-play', '▶');
+        play.type = 'button';
+        play.setAttribute('aria-label', 'Cheza');
+        row.appendChild(play);
+
         row.appendChild(el('span', 'check', '✓'));
         content.appendChild(row);
       });
@@ -592,7 +610,7 @@
     if (ev.key === 'Escape') closeSheet();
   });
 
-  fileInput.addEventListener('change', function () {
+ fileInput.addEventListener('change', function () {
     var files = fileInput.files;
     var type = pendingType || tab;
     pendingType = null;
@@ -604,6 +622,34 @@
   });
 
   fileInput.addEventListener('cancel', function () { window.PPNoLock = false; pendingType = null; });
+
+  /* ---------- Utafutaji wa muziki ---------- */
+  function setQuery(q) {
+    query = q;
+    if (searchInput.value !== q) searchInput.value = q;
+    if (tab === 'audio') render();
+    else updateSearchUI(0);
+  }
+
+  searchInput.addEventListener('input', function () { setQuery(searchInput.value); });
+
+  searchClear.addEventListener('click', function () {
+    setQuery('');
+    searchInput.focus();
+  });
+
+  searchInput.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); searchInput.blur(); }
+  });
+
+  // Kibodi isifunike orodha: nav na + vinajificha wakati wa kuandika
+  searchInput.addEventListener('focus', function () { document.body.classList.add('kb-open'); });
+  searchInput.addEventListener('blur', function () { document.body.classList.remove('kb-open'); });
+
+  // Ukitelezesha orodha, kibodi inafungwa
+  content.addEventListener('touchmove', function () {
+    if (document.activeElement === searchInput) searchInput.blur();
+  }, { passive: true });
 
   /* ---------- Funga app ---------- */
   $('lockBtn').addEventListener('click', function () {

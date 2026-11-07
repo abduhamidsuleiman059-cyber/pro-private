@@ -38,6 +38,7 @@
     mute: '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/>',
     headphones: '<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><path d="M21 15a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h3zM3 15a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H3z"/>',
     folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
     shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>'
   };
 
@@ -65,7 +66,8 @@
     '🔁': 'repeat', '🔂': 'repeat', '🔀': 'shuffle',
     '🔊': 'volume', '🔉': 'volume', '🔇': 'mute',
     '📁': 'folder', '📂': 'folder',
-    '🛡': 'shield'
+    '🛡': 'shield',
+    '🔍': 'search'
   };
 
   var keys = Object.keys(MAP);
@@ -131,15 +133,27 @@
     }).observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
+  var SELF = document.currentScript && document.currentScript.src;
+
+  function sibling(rel) {
+    return SELF ? SELF.replace(/js\/theme\.js(\?.*)?$/, rel) : rel;
+  }
+
   // Pakia css/icons.css (njia yake inatoka mahali theme.js ilipo)
   (function loadCss() {
-    var src = document.currentScript && document.currentScript.src;
-    var href = src ? src.replace(/js\/theme\.js(\?.*)?$/, 'css/icons.css') : 'css/icons.css';
     var l = document.createElement('link');
     l.rel = 'stylesheet';
-    l.href = href;
+    l.href = sibling('css/icons.css');
     document.head.appendChild(l);
   })();
+
+  // Ukurasa wa player: pakia majina safi ya nyimbo (js/songname.js)
+  if (/player\.html$/i.test(location.pathname) && !window.PPSong) {
+    var sn = document.createElement('script');
+    sn.src = sibling('js/songname.js');
+    sn.async = true;
+    document.head.appendChild(sn);
+  }
 
   /* =========================================================
      B. THEME (black / white)
