@@ -292,7 +292,8 @@
     if (!tiles.length) return;
 
     function fill(tile) {
-      var id = tile.getAttribute('data-id');
+      var holder = tile.closest('[data-id]') || tile;
+      var id = holder.getAttribute('data-id');
       tile.removeAttribute('data-lazy');
       var it = null;
       for (var i = 0; i < items.length; i++) {
@@ -332,6 +333,13 @@
     }, { rootMargin: '300px' });
 
     for (var j = 0; j < tiles.length; j++) lazyObserver.observe(tiles[j]);
+  }
+
+  var MONTHS = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ago', 'Sep', 'Okt', 'Nov', 'Des'];
+
+  function fmtDate(ts) {
+    var d = new Date(ts);
+    return isNaN(d.getTime()) ? '' : d.getDate() + ' ' + MONTHS[d.getMonth()];
   }
 
   function visibleItems() {
@@ -407,7 +415,36 @@
       return;
     }
 
-    var grid = el('div', 'photo-grid' + (tab === 'video' ? ' video-grid' : ''));
+    if (tab === 'video') {
+      var vgrid = el('div', 'video-pro');
+      items.forEach(function (it) {
+        var card = el('div', 'vcard');
+        card.setAttribute('data-id', it.id);
+        if (selected[it.id]) card.classList.add('selected');
+
+        var thumb = el('div', 'vthumb');
+        thumb.appendChild(el('div', 'ph', t.icon));
+        if (it.thumbData) thumb.setAttribute('data-lazy', '1');
+        thumb.appendChild(el('div', 'vshade'));
+        thumb.appendChild(el('div', 'vplay', '▶'));
+        thumb.appendChild(el('div', 'vdur', fmtDur(it.duration)));
+        thumb.appendChild(el('span', 'vcheck', '✓'));
+        card.appendChild(thumb);
+
+        var info = el('div', 'vinfo');
+        info.appendChild(el('div', 'vtitle', PPSong.parse(it.name).title));
+        var sub = fmtSize(it.size) + (fmtDate(it.added) ? ' \u2022 ' + fmtDate(it.added) : '');
+        info.appendChild(el('div', 'vsub', sub));
+        card.appendChild(info);
+
+        vgrid.appendChild(card);
+      });
+      content.appendChild(vgrid);
+      setupLazy(vgrid);
+      return;
+    }
+
+    var grid = el('div', 'photo-grid');
     items.forEach(function (it) {
       var tile = el('div', 'tile');
       tile.setAttribute('data-id', it.id);
@@ -417,10 +454,6 @@
       tile.appendChild(el('div', 'ph', t.icon));
       if (it.thumbData) tile.setAttribute('data-lazy', '1');
 
-      if (tab === 'video') {
-        tile.appendChild(el('div', 'play', '▶'));
-        tile.appendChild(el('div', 'dur', fmtDur(it.duration)));
-      }
       tile.appendChild(el('span', 'check', '✓'));
       grid.appendChild(tile);
     });
@@ -576,7 +609,7 @@
     vibrate(10);
   }
 
-  function closeSheet() {
+ function closeSheet() {
     if (!sheet) return;
     sheet.classList.remove('open');
     sheet.setAttribute('aria-hidden', 'true');
@@ -610,7 +643,7 @@
     if (ev.key === 'Escape') closeSheet();
   });
 
- fileInput.addEventListener('change', function () {
+  fileInput.addEventListener('change', function () {
     var files = fileInput.files;
     var type = pendingType || tab;
     pendingType = null;

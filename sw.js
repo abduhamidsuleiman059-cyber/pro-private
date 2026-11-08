@@ -2,7 +2,7 @@
    Inafanya app ifanye kazi offline kwa kuhifadhi faili za msingi.
    Ukibadili faili yoyote, ongeza namba ya VERSION ili simu zipakue upya. */
 
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = 'pro-private-' + VERSION;
 
 const FILES = [
@@ -25,6 +25,7 @@ const FILES = [
   './css/polish.css',
   './css/icons.css',
   './css/music-plus.css',
+  './css/video-pro.css',
   './js/theme.js',
   './js/app.js',
   './js/pin.js',

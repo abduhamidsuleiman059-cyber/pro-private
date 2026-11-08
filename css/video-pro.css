@@ -1,0 +1,179 @@
+/* Pro Private - video-pro.css
+   Tabo ya Video: kadi za kisasa (picha kubwa 16:9, kitufe cha play chenye blur,
+   muda, jina safi na ukubwa). Pakia baada ya music-plus.css. */
+
+.video-pro {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 12px;
+  margin-top: 12px;
+}
+
+/* Simu ndogo sana: kadi moja kwa mstari */
+@media (max-width: 339px) {
+  .video-pro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Skrini pana: kadi tatu */
+@media (min-width: 520px) {
+  .video-pro {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.vcard {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.14s ease, border-color 0.2s ease;
+}
+
+.vcard:active {
+  transform: scale(0.97);
+}
+
+.vcard.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* ----- Picha ya video ----- */
+.vthumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1b1b1f, #2c2c33 60%, #1b1b1f);
+}
+
+.vthumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vthumb .ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  color: #ffffff;
+  font-size: 30px;
+  opacity: 0.35;
+}
+
+/* kivuli cha chini ili muda usomeke */
+.vshade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 55%);
+  pointer-events: none;
+}
+
+.vplay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.38);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.vplay .ico {
+  margin-left: 2px;
+}
+
+.vdur {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
+  pointer-events: none;
+}
+
+/* ----- Maelezo chini ----- */
+.vinfo {
+  padding: 10px 12px 12px;
+}
+
+.vtitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vsub {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ----- Alama ya kuchagua ----- */
+.vcheck {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: transparent;
+  font-size: 14px;
+}
+
+.selecting .vcheck {
+  display: flex;
+}
+
+.vcard.selected .vcheck {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.vcheck .ico svg {
+  stroke-width: 3;
+}
