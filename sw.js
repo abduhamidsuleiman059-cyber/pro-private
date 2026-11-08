@@ -2,10 +2,11 @@
    Inafanya app ifanye kazi offline kwa kuhifadhi faili za msingi.
    Ukibadili faili yoyote, ongeza namba ya VERSION ili simu zipakue upya. */
 
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE = 'pro-private-' + VERSION;
 
-const FILES = [
+// Faili za lazima: zote lazima zihifadhiwe, vinginevyo toleo jipya halichukui nafasi
+const CORE = [
   './',
   './index.html',
   './pin.html',
@@ -37,25 +38,49 @@ const FILES = [
   './js/viewer.js',
   './js/media.js',
   './js/settings.js',
-  './js/backup.js',
+  './js/backup.js'
+];
+
+// Za hiari: zikikosekana, install bado inaendelea
+const OPTIONAL = [
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];
 
-/* Install: hifadhi kila faili kivyake.
-   Faili ambayo bado haijatengenezwa haivunji install. */
+const FILES = CORE.concat(OPTIONAL);
+
+async function fetchFresh(url) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const res = await fetch(new Request(url, { cache: 'reload' }));
+      if (res && res.ok) return res;
+    } catch (e) {}
+  }
+  return null;
+}
+
+/* Install: hifadhi kila faili. Faili za lazima zikikosa, install inashindwa
+   (toleo la zamani linabaki) na itajaribiwa tena mtandao ukipatikana. */
 self.addEventListener('install', function (event) {
-  event.waitUntil(
-    caches.open(CACHE).then(function (cache) {
-      return Promise.all(
-        FILES.map(function (url) {
-          return cache.add(new Request(url, { cache: 'reload' })).catch(function () {});
-        })
-      );
-    }).then(function () {
-      return self.skipWaiting();
-    })
-  );
+  event.waitUntil((async function () {
+    const cache = await caches.open(CACHE);
+    const missing = [];
+
+    await Promise.all(FILES.map(async function (url) {
+      const res = await fetchFresh(url);
+      if (res) {
+        await cache.put(new Request(url), res);
+      } else if (CORE.indexOf(url) !== -1) {
+        missing.push(url);
+      }
+    }));
+
+    if (missing.length) {
+      await caches.delete(CACHE);
+      throw new Error('Faili hazikupatikana: ' + missing.join(', '));
+    }
+    await self.skipWaiting();
+  })());
 });
 
 /* Activate: futa cache za matoleo ya zamani */
@@ -74,27 +99,52 @@ self.addEventListener('activate', function (event) {
 });
 
 /* Fetch: cache kwanza, kisha mtandao.
-   ignoreSearch: viewer.html?id=... na player.html?id=... zitumie nakala ya viewer.html / player.html
-   ili zifunguke hata offline. */
+   ignoreSearch: viewer.html?id=... na player.html?id=... zitumie nakala ya viewer.html / player.html. */
 self.addEventListener('fetch', function (event) {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then(function (cached) {
-      if (cached) return cached;
-      return fetch(event.request).then(function (response) {
-        if (response && response.status === 200 && response.type === 'basic') {
-          var copy = response.clone();
-          caches.open(CACHE).then(function (cache) {
-            cache.put(event.request, copy);
-          });
-        }
-        return response;
-      }).catch(function () {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
-    })
-  );
+  event.respondWith((async function () {
+    const cached = await caches.match(req, { ignoreSearch: true });
+    if (cached) return cached;
+
+    try {
+      const response = await fetch(req);
+      if (response && response.status === 200 && response.type === 'basic') {
+        const copy = response.clone();
+        caches.open(CACHE).then(function (cache) { cache.put(req, copy); });
+      }
+      return response;
+    } catch (e) {
+      if (req.mode === 'navigate') {
+        const home = await caches.match('./index.html');
+        if (home) return home;
+      }
+      return new Response('Hakuna mtandao.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    }
+  })());
+});
+
+/* Settings inauliza: "offline iko tayari?" */
+self.addEventListener('message', function (event) {
+  if (!event.data || event.data.type !== 'status' || !event.ports || !event.ports[0]) return;
+  const port = event.ports[0];
+
+  event.waitUntil((async function () {
+    const cache = await caches.open(CACHE);
+    const have = {};
+    (await cache.keys()).forEach(function (r) { have[new URL(r.url).pathname] = 1; });
+
+    const missing = FILES.filter(function (f) {
+      return !have[new URL(f, self.registration.scope).pathname];
+    });
+
+    port.postMessage({
+      version: VERSION,
+      total: FILES.length,
+      cached: FILES.length - missing.length,
+      missing: missing
+    });
+  })());
 });

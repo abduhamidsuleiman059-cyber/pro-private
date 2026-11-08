@@ -274,11 +274,96 @@
 
   updateInstallUI();
 
+  /* ---------- Offline: hali na kusasisha ---------- */
+  var offlineStatus = $('offlineStatus');
+
+  function askWorker(reg) {
+    return new Promise(function (resolve) {
+      var worker = reg.active;
+      if (!worker) { resolve(null); return; }
+      var ch = new MessageChannel();
+      var done = false;
+      var timer = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 3000);
+      ch.port1.onmessage = function (ev) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(ev.data);
+      };
+      try { worker.postMessage({ type: 'status' }, [ch.port2]); }
+      catch (e) { done = true; clearTimeout(timer); resolve(null); }
+    });
+  }
+
+  async function refreshOffline(attempt) {
+    attempt = attempt || 0;
+    if (!('serviceWorker' in navigator)) {
+      offlineStatus.textContent = 'Browser hii haiungi offline.';
+      return;
+    }
+
+    var reg = null;
+    try { reg = await navigator.serviceWorker.getRegistration(); } catch (e) {}
+
+    var st = null;
+    if (reg && reg.active) st = await askWorker(reg);
+
+    // Bado inajiandaa: subiri kidogo kisha angalia tena
+    var updating = !!(reg && (reg.installing || reg.waiting));
+    var preparing = updating || (!reg || !reg.active) || (st && st.cached < st.total);
+    if (preparing && attempt < 12 && navigator.onLine) {
+      offlineStatus.textContent = 'Inajiandaa offline... tafadhali subiri.';
+      setTimeout(function () { refreshOffline(attempt + 1); }, 1500);
+      return;
+    }
+
+    if (!reg || !reg.active) {
+      offlineStatus.textContent = 'Offline bado haijawashwa. Unganisha mtandao, kisha bonyeza "Sasisha app".';
+    } else if (!st) {
+      offlineStatus.textContent = 'Toleo la zamani la offline linatumika. Unganisha mtandao kisha bonyeza "Sasisha app".';
+    } else if (st.cached === st.total) {
+      offlineStatus.textContent = 'Offline iko tayari ✅ (' + st.version + ', faili ' + st.cached + '/' + st.total + ').';
+    } else {
+      offlineStatus.textContent = 'Offline haijakamilika (' + st.cached + '/' + st.total + '). Unganisha mtandao kisha bonyeza "Sasisha app".';
+    }
+  }
+
+  $('refreshAppBtn').addEventListener('click', async function () {
+    if (!('serviceWorker' in navigator)) { toast('Browser hii haiungi offline.'); return; }
+
+    // Hakikisha mtandao upo kabla ya kufuta nakala za zamani
+    var online = false;
+    try {
+      var r = await fetch('sw.js', { cache: 'no-store' });
+      online = r && r.ok;
+    } catch (e) {}
+    if (!online) { toast('Unganisha mtandao kwanza, kisha jaribu tena.'); return; }
+
+    showProgress('Inasasisha app...');
+    try {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for (var i = 0; i < regs.length; i++) await regs[i].unregister();
+
+      var names = await caches.keys();
+      for (var j = 0; j < names.length; j++) {
+        if (names[j].indexOf('pro-private-') === 0) await caches.delete(names[j]);
+      }
+    } catch (e) {
+      hideProgress();
+      toast('Imeshindwa kusasisha. Jaribu tena ukiwa na mtandao mzuri.');
+      return;
+    }
+
+    // Pakia ukurasa upya kutoka mtandaoni: service worker mpya inasajiliwa na kuhifadhi faili zote
+    location.reload();
+  });
+
   /* ---------- Kuanza ---------- */
   async function init() {
     try { key = await PPCrypto.getSessionKey(); } catch (e) {}
     if (!key) { location.replace('pin.html'); return; }
     refreshInfo();
+    refreshOffline();
   }
 
   init();
